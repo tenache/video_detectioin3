@@ -1,0 +1,8 @@
+# Paths to data
+path: /home/thibbard/video_detectioin2/download/heads
+train: images/train
+val:  images/validation
+
+# Clases
+names:
+  0: head
