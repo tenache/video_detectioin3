@@ -1,5 +1,5 @@
 # Paths to data
-path: /home/thibbard/video_detectioin2/download/heads
+path: /home/tenache89/blackfish/video_detectioin3/download/heads
 train: images/train
 val:  images/validation
 
