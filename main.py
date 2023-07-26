@@ -11,7 +11,7 @@ from functools import reduce
 from colors import generate_color_sets
 from time import sleep
 
-video_name = "camera_01-FRENTE_main_20230706103457.dav"
+video_name = "camera_01-FRENTE_main_20230706110518.dav"
 video_path = os.path.join(".","sample_data",video_name)
 
 
@@ -20,6 +20,7 @@ video_out_path = os.path.join( output_dir, os.path.splitext(video_name)[0] + "_o
 
 rois = get_rois(video_path)
 
+MODEL_PATH = "/home/tenache89/blackfish/video_detectioin3/download/runs/detect/train4/weights/best.pt"
 
 def detect_frames(
     video_name=video_name, 
@@ -28,7 +29,9 @@ def detect_frames(
     show_me=True, 
     max_frames= None,
     rois=rois,
-    debug = False
+    debug = False,
+    model_path = MODEL_PATH,
+    detection_threshold = 0.4
     ):
     print("We are here")
 
@@ -59,7 +62,8 @@ def detect_frames(
 
     print("we are here 2")
     
-    model = YOLO("yolov8n.pt")
+
+    model = YOLO(model_path)
     # model = YOLO("yolov3n.pt")
     print("we are here 3")
 
@@ -85,7 +89,8 @@ def detect_frames(
         
         for r in result.boxes.data.tolist():
             x1, y1, x2, y2, score, class_id = r # all objects in coco_classes
-            if class_id == 0:
+
+            if class_id == 0 and score > detection_threshold:
                 detections.append([int(x1), int(y1),int(x2), int(y2), int(score)])
                 all_detections.append((int(x1),int(y1),int(x2),int(y2)))
                 if rois is not None:
@@ -96,7 +101,7 @@ def detect_frames(
                                    
         print(" we are here 5")
         if detections:
-            print(f"detections is {detections}")
+            print(f"detections is {detections} with model {model_path}")
             tracker.update(frame, detections)  # the most importante function 
             for track in tracker.tracks:
                 all_people.add(track.track_id)
@@ -106,9 +111,9 @@ def detect_frames(
                 if detections_roi[i]:
                     print(rois)
                     print(f"detectons_roi is {detections_roi}")
-                    sleep(1)
+                    # sleep(1)
                     print(f"detections_roi[i] is {detections_roi[i]}")
-                    sleep(1)
+                    # sleep(1)
                     tracker.update(frame, detections_roi[i])
                     for track in tracker.tracks:
                         all_people_roi[i].add(track.track_id)
@@ -133,14 +138,16 @@ def detect_frames(
                                 intersections[i][j] = inters
                             # people_move.append((inters, i, j))
               
-       
+        print(f"intersections are {intersections}")
         font = cv2.FONT_HERSHEY_SIMPLEX
         font_scale = 1.0
         color = (255, 255, 255)  # Text color (in BGR format)
         thickness = 2  # Text thickness
         texts = []
         for i in intersections:
+            print(f"intersections is {intersections}")
             for j in intersections[i]:
+                print(f"intersections is {intersections}")
                 texts.append(f"{len(intersections[i][j])} personas se movieron entre las zonas {i} y {j}")
                 if wait and debug:
                     print(f"intersections[{i}][{j}] is {intersections[i][j]}")
@@ -149,17 +156,24 @@ def detect_frames(
                     if k ==ord('q'):
                         break
                 
-            
+        print(f"texts is {texts}")   
         # text = f"{len(reduce(set.union, all_people_roi))} personas de {len(all_people)} entraron "
         print("all people roi is ")
         print(set.union, all_people_roi)
+
         for i, text in enumerate(texts):
+
+            print(text)
             text_size, _ = cv2.getTextSize(text, font, font_scale, thickness)
             text_width, text_height = text_size
             # Specify the position to write the text
-            position = (int((video_width - text_width) / 2), video_height - int(0.05 *i * video_height))  
+            position = (int((video_width - text_width) / 2), video_height - int(0.05 * (i+1) * video_height))  
             cv2.putText(frame, text, position, font, font_scale, color, thickness)  
-                   
+        text = "Ya anda!"
+        text_size, _ = cv2.getTextSize(text, font, font_scale, thickness)
+        text_width, text_height = text_size
+        position = position = (int((video_width - text_width) / 2), video_height - int(0.25 *1 * video_height)) 
+        cv2.putText(frame, text, position, font, font_scale, color, thickness)        
         
         if tracker.tracks is not None:
             print(f"len of tracker.tracks is {len(all_people)}")
@@ -197,3 +211,6 @@ def detect_frames(
 if __name__ == "__main__":
     detect_frames()
     
+    # cap = cv2.VideoCapture(video_path)
+    # ret, frame = cap.read()
+    # print(f"frame is {frame}")

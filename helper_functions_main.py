@@ -36,6 +36,8 @@ def draw_frame_info(tracker, frame, colors, show_me, rois, colors_roi):
 
 def update_tracker(tracker, frame, detections, all_people, rois, all_people_roi, detections_roi):
     """Update tracker and gather information of unique people in each ROI"""
+    print(f"frame is {frame}")
+    print(f"detections is {detections}")
     if detections:
         tracker.update(frame, detections)
         for track in tracker.tracks:

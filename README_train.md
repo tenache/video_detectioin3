@@ -1,6 +1,6 @@
-# Project Title
+# Video detectioin
 
-This is a short description of the project.
+This project contains necessary code for training, and fine-tuning YOLO from personal datasets, and applying the model to videos for counting people, making heatmaps, etc. 
 
 ## Installation
 

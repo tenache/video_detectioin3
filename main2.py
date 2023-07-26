@@ -24,8 +24,13 @@ video_out_path = os.path.join( output_dir, os.path.splitext(video_name)[0] + "_o
 
 rois = get_rois(video_path)
 
+YOLO_PATH = "/home/tenache89/blackfish/video_detectioin3/download/runs/detect/train4/weights/best.pt"
+
+
 # TODO: mejorar transitions
-def detect_frames(video_name, video_path, video_out_path, show_me=True, max_frames=None, rois=None, debug=False, display="intersections"):
+def detect_frames(video_name, video_path, \
+                  video_out_path, show_me=False, max_frames=None, rois=None, \
+                    debug=False, display="intersections", yolo_path = YOLO_PATH):
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         raise IOError("Error opening video file")
@@ -35,7 +40,10 @@ def detect_frames(video_name, video_path, video_out_path, show_me=True, max_fram
     
     ret, frame = cap.read()
     cap_out = cv2.VideoWriter(video_out_path, cv2.VideoWriter_fourcc(*'mp4v'), cap.get(cv2.CAP_PROP_FPS), (frame.shape[1], frame.shape[0]))
-    model = YOLO("yolov8n.pt")
+    if yolo_path is None:
+        model = YOLO("yolov8n.pt")
+    else:
+        model = YOLO(yolo_path)
     tracker = Tracker()
     colors, colors_roi = generate_color_sets(2, 10)
     
